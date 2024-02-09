@@ -1,0 +1,62 @@
+Este código representa la lógica de compra de un artículo en tu aplicación. Primero, se obtiene el ID del artículo de los parámetros de la solicitud.
+ Luego, se registra información sobre la compra en el registro. Se obtiene información sobre el artículo que se está comprando, incluido su valor. 
+Luego se verifica si el usuario comprador tiene saldo suficiente y si no está comprando su propio artículo. Si se cumplen estas condiciones, 
+se actualizan los saldos de los usuarios y la propiedad del artículo, y se actualiza la información en la base de datos. Si la operación de actualización es exitosa, 
+se registra la compra en la base de datos y se confirma la transacción. Si no se puede actualizar la información, se deshace la transacción. Finalmente, 
+se imprime información sobre todas las compras realizadas en la consola y se redirige al usuario de vuelta a la página de inicio.
+
+
+// Obtener el ID del artículo de los parámetros de la solicitud
+int articuloId = Integer.parseInt(request.params(":id"));
+
+// Registrar información sobre la compra en el registro
+logger.info("COMPRANDO ARTICULO ID: "+articuloId);
+
+// Obtener información sobre el artículo que se está comprando
+Articulo articulo = articulosDao.obtenerArticulo(articuloId);
+
+// Obtener el valor del artículo
+int valorArticulo = articulo.getValor();
+
+// Obtener información del usuario comprador actualmente logueado
+Usuario usuarioComprador = usuariosDao.obtenerUsuario(loggedUserId, null);
+
+// Obtener información del usuario vendedor del artículo
+Usuario usuarioVendedor = usuariosDao.obtenerUsuario(articulo.getIdPropietario(), null);
+
+// Verificar si el usuario comprador tiene saldo suficiente y no está comprando su propio artículo
+if(usuarioComprador.getSaldo() >= valorArticulo && usuarioComprador.getId() != usuarioVendedor.getId()) {
+    // Actualizar saldos de los usuarios
+    usuarioComprador.setSaldo(usuarioComprador.getSaldo() - valorArticulo);
+    usuarioVendedor.setSaldo(usuarioVendedor.getSaldo() + valorArticulo);
+
+    // Transferir la propiedad del artículo al usuario comprador
+    articulo.setIdPropietario(usuarioComprador.getId());
+
+    // Actualizar información en la base de datos
+    usuarioComprador = usuariosDao.actualizarUsuario(usuarioComprador);
+    usuarioVendedor = usuariosDao.actualizarUsuario(usuarioVendedor);
+    articulo = articulosDao.actualizarArticulo(articulo);
+
+    // Verificar si la operación de actualización fue exitosa
+    if(usuarioComprador != null && usuarioVendedor != null && articulo != null) {
+        // Registrar la compra en la base de datos y confirmar la transacción
+        comprasDao.crearCompras(articulo.getId(), usuarioComprador.getId(), usuarioVendedor.getId(),  new Date());
+        DatabaseManager.persistir();
+    } else {
+        // Deshacer la transacción si no se pudo actualizar la información
+        DatabaseManager.deshacer();
+    }
+
+    // Imprimir todas las compras realizadas en la consola
+    List<Compras> compras = comprasDao.obtenerCompras();
+    for (Compras compra : compras) {
+        System.out.println(compra);
+    }
+}
+
+// Redirigir al usuario de vuelta a la página de inicio
+response.redirect("/home");
+
+// Retornar nulo ya que no se requiere ninguna respuesta adicional
+return null;
