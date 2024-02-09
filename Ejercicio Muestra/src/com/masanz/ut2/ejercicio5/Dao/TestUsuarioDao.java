@@ -5,9 +5,9 @@ import java.util.List;
 
 public class TestUsuarioDao {
     // Definición de las credenciales de conexión a la base de datos
-    private static final String URL = "jdbc:mysql://localhost:3306/nombre_base_de_datos";
-    private static final String USUARIO = "usuario";
-    private static final String CONTRASENA = "contraseña";
+    private static final String URL = "jdbc:mysql://localhost:3306/test";
+    private static final String USUARIO = "root";
+    private static final String CONTRASENA = "root";
 
     // Método para conectar a la base de datos
     public static Connection conectar() throws SQLException {
@@ -121,13 +121,80 @@ public class TestUsuarioDao {
     }
 
     // Ejemplo de uso
-    public static void main(String[] args) {
+    /*public static void main(String[] args) {
         try {
             crearTablaUsuarios();
+            crearUsuario("feo","muyfeo","feoDEcojones","123");
+           /* PreparedStatement pstmt = conectar().prepareStatement("SELECT LAST_INSERT_ID()");
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                 int idUsuario = rs.getInt(1);borrarUsuario(idUsuario);
+            }
+
             // Puedes llamar a otros métodos aquí para probarlos
         } catch (SQLException e) {
             manejarError(e);
         }
+    }*/
+    public static void main(String[] args) {
+        try {
+            crearTablaUsuarios();
+            /*int idUsuarioNuevo = crearUsuarioYDevolverId("Juan Pérez", "juanperez", "juan@example.com", "password123");
+            if (idUsuarioNuevo != -1) {
+                borrarUsuario(idUsuarioNuevo);
+            }*/
+        } catch (SQLException e) {
+            manejarError(e);
+        }
     }
+
+    public static void crearUsuario(String fullName, String username, String email, String password) throws SQLException {
+        Connection conexion = null;
+        PreparedStatement pstmt = null;
+        try {
+            conexion = conectar();
+            String sql = "INSERT INTO usuarios (full_name, user, email, password, creation_date) VALUES (?, ?, ?, ?, ?)";
+            pstmt = conexion.prepareStatement(sql);
+            pstmt.setString(1, fullName);
+            pstmt.setString(2, username);
+            pstmt.setString(3, email);
+            pstmt.setString(4, password);
+            //pstmt.setDate(5, new java.sql.Date(new Date().getTime())); // Fecha actual como fecha de creación
+            pstmt.executeUpdate();
+            System.out.println("Nuevo usuario creado exitosamente.");
+        } finally {
+            if (pstmt != null) {
+                pstmt.close();
+            }
+            desconectar(conexion);
+        }
+    }
+
+    /*
+     Date fechaActual = new Date();
+
+        Crear un objeto Date con una fecha específica (año, mes, día)
+
+        Date fechaEjemplo = new Date(121, 0, 1); // 1 de enero de 2021 (año - 1900, mes - 1, día)
+
+
+        //DELETE FROM usuarios WHERE id = ?;
+        //UPDATE usuarios SET full_name = ? WHERE id = ?;
+         insertarNuevoUsuario("Juan Perez", "juanperez", "juan@example.com", "password123", new Date());
+        insertarNuevoUsuario("María López", "marialopez", "maria@example.com", "password456", new Date());
+    /*
+    * Modo de apuntes:
+        Creación de tabla de usuarios: Para crear la tabla de usuarios en la base de datos, utilizamos la sentencia CREATE TABLE IF NOT EXISTS seguida de la definición de las columnas y sus tipos de datos. En este caso, también hemos especificado que el campo id sea de tipo INT AUTO_INCREMENT para que se incremente automáticamente con cada nuevo usuario.
+
+        Inserción de nuevo usuario: Para insertar un nuevo usuario en la tabla, utilizamos la sentencia INSERT INTO seguida del nombre de la tabla y los valores que queremos insertar. Utilizamos PreparedStatement para evitar la inyección SQL y asegurarnos de que los valores se inserten correctamente.
+
+        Borrado de usuario por su ID: Para borrar un usuario de la tabla, utilizamos la sentencia DELETE FROM seguida del nombre de la tabla y una condición que especifica qué usuario queremos borrar, en este caso, por su ID.
+
+        Modificación de nombre de usuario por su ID: Para modificar el nombre de un usuario en la tabla, utilizamos la sentencia UPDATE seguida del nombre de la tabla y la columna que queremos modificar, junto con el nuevo valor. Es importante especificar también la condición para indicar qué usuario queremos modificar, en este caso, por su ID.
+
+        Reasignación de usuario (hipotética): Esta consulta debería ser adaptada según el significado de "reasignar" en tu contexto específico. Dependiendo de lo que signifique "reasignar", la consulta podría implicar actualizar algún campo específico del usuario o realizar algún tipo de operación más compleja.
+    *
+    * */
+
 }
 

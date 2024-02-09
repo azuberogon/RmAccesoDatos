@@ -56,7 +56,7 @@ public class GestorDataBase {
 
         return persona;
     }
-
+crut
 
 
 }
