@@ -160,7 +160,7 @@ public class TestUsuarioDao {
             pstmt.setString(3, email);
             pstmt.setString(4, password);
             //pstmt.setDate(5, new java.sql.Date(new Date().getTime())); // Fecha actual como fecha de creación
-            pstmt.executeUpdate();
+            //pstmt.exec;
             System.out.println("Nuevo usuario creado exitosamente.");
         } finally {
             if (pstmt != null) {
